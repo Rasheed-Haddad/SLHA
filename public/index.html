@@ -48,7 +48,7 @@
       /* ===== شريط أدوات ===== */
       .toolbar {
         max-width: 920px;
-        margin: 0 auto 18px;
+        margin: 22px auto 0;
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
@@ -531,18 +531,6 @@
     </style>
   </head>
   <body>
-    <div class="toolbar">
-      <button class="btn" id="btnSubmitA" type="button">
-        ✍️ توقيع وتثبيت الطرف الأول
-      </button>
-      <button class="btn" id="btnSubmitB" type="button">
-        ✍️ توقيع وتثبيت الطرف الثاني
-      </button>
-      <button class="btn secondary" id="btnExport" type="button">
-        📄 تصدير PDF
-      </button>
-    </div>
-
     <div class="doc-wrap">
       <div class="document" id="document">
         <div class="ornate-frame"></div>
@@ -720,6 +708,18 @@
           </svg>
         </div>
       </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn" id="btnSubmitA" type="button">
+        ✍️ توقيع وتثبيت الطرف الأول
+      </button>
+      <button class="btn" id="btnSubmitB" type="button">
+        ✍️ توقيع وتثبيت الطرف الثاني
+      </button>
+      <button class="btn secondary" id="btnExport" type="button">
+        📄 تصدير PDF
+      </button>
     </div>
 
     <div class="toast" id="toast"></div>
