@@ -241,6 +241,9 @@
         text-align: justify;
         margin-bottom: 26px;
         color: var(--ink);
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        hyphens: auto;
       }
 
       .field-section {
@@ -478,6 +481,7 @@
         .preamble {
           font-size: 15px;
           line-height: 1.9;
+          text-align: right; /* يمنع تمدد الأسطر خارج الإطار على الجوال */
         }
         .doc-meta {
           flex-direction: column;
@@ -846,8 +850,10 @@
           state.finalized = state.lockedA && state.lockedB;
           $("nameA").disabled = state.lockedA;
           $("nameB").disabled = state.lockedB;
+          // الحقول المشتركة (تفاصيل/أسباب/شروط) يعبّيها الطرف الأول،
+          // وتُقفل عن التعديل بمجرد تثبيته.
           SHARED_FIELDS.forEach((f) => {
-            $(f).disabled = state.finalized;
+            $(f).disabled = state.lockedA;
           });
 
           ["A", "B"].forEach((p) => {
@@ -1017,6 +1023,8 @@
           try {
             const doc = await apiGet();
             mergeRemote(doc);
+            // اسم الطرف الثاني افتراضياً (إن لم يكن قد ثبّت بعد)
+            if (!state.nameB) state.nameB = "غنوة وائل عابد";
             applyStateToUI();
           } catch (err) {
             console.error(err);
