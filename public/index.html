@@ -278,6 +278,8 @@
         min-height: 90px;
         border: 1.5px dashed var(--line);
         border-radius: 6px;
+        overflow: hidden; /* بلا سكرول — يتمدد بحسب المحتوى عبر JS */
+        resize: none;
       }
       .field-input:focus,
       .field-textarea:focus {
@@ -451,21 +453,76 @@
       }
 
       @media (max-width: 680px) {
+        body {
+          padding: 16px 8px 60px;
+        }
         .two-cols {
           grid-template-columns: 1fr;
+          gap: 18px;
         }
         .document {
-          padding: 40px 24px 80px;
+          padding: 34px 18px 76px;
+        }
+        .ornate-frame {
+          inset: 10px;
         }
         .doc-title {
-          font-size: 30px;
+          font-size: 28px;
+        }
+        .doc-subtitle {
+          font-size: 14px;
+        }
+        .bismillah {
+          font-size: 22px;
+        }
+        .preamble {
+          font-size: 15px;
+          line-height: 1.9;
+        }
+        .doc-meta {
+          flex-direction: column;
+          gap: 4px;
+          align-items: center;
+          font-size: 13px;
+        }
+        .field-label {
+          font-size: 15px;
+        }
+        .field-input,
+        .field-textarea {
+          font-size: 16px; /* 16px تمنع تكبير الشاشة التلقائي على iOS */
+        }
+        .party-box {
+          padding: 16px 12px 12px;
+        }
+        .party-box h3 {
+          font-size: 20px;
         }
         .seal {
-          width: 100px;
-          height: 100px;
-          left: 20px;
-          bottom: 24px;
+          width: 92px;
+          height: 92px;
+          left: 14px;
+          bottom: 20px;
         }
+        .toolbar .btn {
+          flex: 1 1 100%;
+          padding: 13px 16px;
+        }
+      }
+
+      @media (max-width: 380px) {
+        .document {
+          padding: 28px 12px 70px;
+        }
+        .doc-title {
+          font-size: 24px;
+        }
+      }
+
+      /* أثناء تصدير PDF: التيكست-إيريا تظهر كاملة بلا قصّ */
+      body.exporting .field-textarea {
+        height: auto !important;
+        overflow: visible !important;
       }
     </style>
   </head>
@@ -781,6 +838,7 @@
           $("signNameB").textContent = state.nameB || "………";
           setSignature("A", state.signA);
           setSignature("B", state.signB);
+          autoGrowAll();
           refreshLocks();
         }
 
@@ -807,6 +865,16 @@
           $("lockMsg").classList.toggle("show", state.finalized);
         }
 
+        /* يجعل التيكست-إيريا تتمدد بطول محتواها (بلا سكرول) */
+        function autoGrow(el) {
+          if (!el) return;
+          el.style.height = "auto";
+          el.style.height = el.scrollHeight + "px";
+        }
+        function autoGrowAll() {
+          SHARED_FIELDS.forEach((id) => autoGrow($(id)));
+        }
+
         /* ===== ربط الحقول ===== */
         function bindFields() {
           ["nameA", "nameB"].forEach((id) => {
@@ -818,8 +886,11 @@
           SHARED_FIELDS.forEach((id) => {
             $(id).addEventListener("input", () => {
               state[id] = $(id).value;
+              autoGrow($(id));
             });
           });
+          // أعِد ضبط الأطوال عند تغيّر حجم الشاشة (تدوير الجوال مثلاً)
+          window.addEventListener("resize", autoGrowAll);
         }
 
         function bindUpload(party) {
@@ -885,6 +956,8 @@
           const doc = $("document");
           const toolbar = document.querySelector(".toolbar");
           toolbar.style.display = "none";
+          document.body.classList.add("exporting");
+          autoGrowAll(); // تأكد أن كل النصوص ممتدة بالكامل قبل اللقطة
           toast("… جاري إنشاء ملف PDF");
           try {
             const canvas = await html2canvas(doc, {
@@ -925,6 +998,8 @@
             toast("⚠️ تعذّر إنشاء PDF: " + err.message);
           } finally {
             toolbar.style.display = "";
+            document.body.classList.remove("exporting");
+            autoGrowAll();
           }
         }
 
