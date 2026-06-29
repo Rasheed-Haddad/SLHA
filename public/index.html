@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>وثيقة مصالحة رسمية</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Aref+Ruqaa:wght@400;700&family=Reem+Kufi:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+      :root {
+        --ink: #3a2a16;
+        --ink-soft: #5b4226;
+        --gold: #9a7b3f;
+        --gold-deep: #7a5e2a;
+        --paper: #f4e9d0;
+        --paper-edge: #e7d4a8;
+        --seal: #8a2d2d;
+        --line: rgba(122, 94, 42, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 30px 14px 70px;
+        font-family: "Amiri", serif;
+        color: var(--ink);
+        background: radial-gradient(
+          circle at 20% 10%,
+          #5a4a32 0%,
+          #382c1c 60%,
+          #241b10 100%
+        );
+        min-height: 100vh;
+      }
+
+      /* ===== شريط أدوات ===== */
+      .toolbar {
+        max-width: 920px;
+        margin: 0 auto 18px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .btn {
+        font-family: "Reem Kufi", sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        padding: 11px 22px;
+        border-radius: 8px;
+        border: 1px solid var(--gold-deep);
+        background: linear-gradient(180deg, #d9b870, #b8943f);
+        color: #2e2210;
+        cursor: pointer;
+        transition:
+          transform 0.12s,
+          box-shadow 0.12s,
+          opacity 0.12s;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+      }
+      .btn:active {
+        transform: translateY(0);
+      }
+      .btn.secondary {
+        background: linear-gradient(180deg, #4a3b22, #352a18);
+        color: #e9dcc0;
+      }
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* ===== الوثيقة ===== */
+      .doc-wrap {
+        max-width: 920px;
+        margin: 0 auto;
+        perspective: 1200px;
+      }
+      .document {
+        position: relative;
+        background:
+          repeating-linear-gradient(
+            0deg,
+            rgba(122, 94, 42, 0.025) 0px,
+            rgba(122, 94, 42, 0.025) 1px,
+            transparent 1px,
+            transparent 28px
+          ),
+          radial-gradient(
+            circle at 50% 40%,
+            #f8efd8 0%,
+            var(--paper) 55%,
+            var(--paper-edge) 100%
+          );
+        padding: 56px 50px 64px;
+        border-radius: 6px;
+        box-shadow:
+          0 0 0 2px var(--paper-edge) inset,
+          0 25px 60px rgba(0, 0, 0, 0.55);
+        overflow: hidden;
+      }
+      .document::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            circle at 8% 12%,
+            rgba(120, 80, 30, 0.12),
+            transparent 16%
+          ),
+          radial-gradient(
+            circle at 92% 88%,
+            rgba(120, 80, 30, 0.14),
+            transparent 18%
+          ),
+          radial-gradient(
+            circle at 85% 15%,
+            rgba(120, 80, 30, 0.08),
+            transparent 12%
+          ),
+          radial-gradient(
+            circle at 12% 90%,
+            rgba(120, 80, 30, 0.1),
+            transparent 14%
+          );
+        pointer-events: none;
+      }
+      .ornate-frame {
+        position: absolute;
+        inset: 18px;
+        border: 2px solid var(--gold-deep);
+        border-radius: 4px;
+        pointer-events: none;
+      }
+      .ornate-frame::after {
+        content: "";
+        position: absolute;
+        inset: 6px;
+        border: 1px solid var(--gold);
+        border-radius: 3px;
+      }
+      .corner {
+        position: absolute;
+        width: 38px;
+        height: 38px;
+        border: 2px solid var(--gold-deep);
+        pointer-events: none;
+      }
+      .corner.tl {
+        top: 10px;
+        right: 10px;
+        border-left: none;
+        border-bottom: none;
+      }
+      .corner.tr {
+        top: 10px;
+        left: 10px;
+        border-right: none;
+        border-bottom: none;
+      }
+      .corner.bl {
+        bottom: 10px;
+        right: 10px;
+        border-left: none;
+        border-top: none;
+      }
+      .corner.br {
+        bottom: 10px;
+        left: 10px;
+        border-right: none;
+        border-top: none;
+      }
+
+      .doc-inner {
+        position: relative;
+        z-index: 2;
+      }
+
+      .bismillah {
+        text-align: center;
+        font-family: "Aref Ruqaa", serif;
+        font-size: 26px;
+        color: var(--gold-deep);
+        margin: 0 0 4px;
+      }
+      .doc-title {
+        text-align: center;
+        font-family: "Aref Ruqaa", serif;
+        font-weight: 700;
+        font-size: 40px;
+        letter-spacing: 1px;
+        color: var(--ink);
+        margin: 14px 0 2px;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+      }
+      .doc-subtitle {
+        text-align: center;
+        font-size: 16px;
+        color: var(--ink-soft);
+        margin: 0 0 6px;
+        font-style: italic;
+      }
+      .divider {
+        height: 22px;
+        margin: 10px auto 26px;
+        width: 60%;
+        background: center/contain no-repeat
+          url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='22' viewBox='0 0 400 22'><g fill='none' stroke='%237a5e2a' stroke-width='1.5'><path d='M0 11 H150'/><path d='M250 11 H400'/><path d='M200 4 l8 7 -8 7 -8 -7 z' fill='%239a7b3f'/><circle cx='170' cy='11' r='3' fill='%239a7b3f'/><circle cx='230' cy='11' r='3' fill='%239a7b3f'/></g></svg>");
+      }
+
+      .doc-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: var(--ink-soft);
+        margin-bottom: 22px;
+        padding: 0 6px;
+      }
+
+      .preamble {
+        font-size: 17px;
+        line-height: 2;
+        text-align: justify;
+        margin-bottom: 26px;
+        color: var(--ink);
+      }
+
+      .field-section {
+        margin-bottom: 24px;
+      }
+      .field-label {
+        font-family: "Reem Kufi", sans-serif;
+        font-weight: 600;
+        font-size: 16px;
+        color: var(--gold-deep);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .field-label::before {
+        content: "❦";
+        color: var(--gold);
+        font-size: 14px;
+      }
+      .field-input,
+      .field-textarea {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.35);
+        border: none;
+        border-bottom: 1.5px dashed var(--line);
+        font-family: "Amiri", serif;
+        font-size: 17px;
+        color: var(--ink);
+        padding: 8px 6px;
+        line-height: 2;
+        resize: vertical;
+      }
+      .field-textarea {
+        min-height: 90px;
+        border: 1.5px dashed var(--line);
+        border-radius: 6px;
+      }
+      .field-input:focus,
+      .field-textarea:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.6);
+        border-color: var(--gold);
+      }
+      .field-input:disabled,
+      .field-textarea:disabled {
+        color: var(--ink);
+        -webkit-text-fill-color: var(--ink);
+        background: transparent;
+        border-bottom-style: solid;
+        border-color: var(--line);
+        opacity: 1;
+      }
+      .field-textarea:disabled {
+        border-style: solid;
+      }
+
+      .two-cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 26px;
+      }
+
+      .party-box {
+        border: 1.5px solid var(--gold-deep);
+        border-radius: 8px;
+        padding: 18px 18px 14px;
+        background: rgba(255, 255, 255, 0.22);
+        position: relative;
+      }
+      .party-box h3 {
+        font-family: "Aref Ruqaa", serif;
+        font-size: 22px;
+        margin: 0 0 14px;
+        color: var(--ink);
+        text-align: center;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 8px;
+      }
+      .party-tag {
+        position: absolute;
+        top: -12px;
+        right: 16px;
+        background: var(--gold-deep);
+        color: #f6ecd2;
+        font-family: "Reem Kufi", sans-serif;
+        font-size: 12px;
+        padding: 3px 12px;
+        border-radius: 20px;
+      }
+
+      .sign-area {
+        margin-top: 14px;
+        text-align: center;
+      }
+      .sign-drop {
+        border: 1.5px dashed var(--line);
+        border-radius: 8px;
+        min-height: 110px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.18);
+        overflow: hidden;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      .sign-drop:hover {
+        border-color: var(--gold);
+        background: rgba(255, 255, 255, 0.3);
+      }
+      .sign-drop img {
+        max-width: 100%;
+        max-height: 150px;
+        mix-blend-mode: multiply;
+      }
+      .sign-drop .placeholder {
+        font-family: "Reem Kufi", sans-serif;
+        font-size: 13px;
+        color: var(--ink-soft);
+        padding: 14px;
+      }
+      .sign-line {
+        border-top: 1px solid var(--ink-soft);
+        margin-top: 10px;
+        padding-top: 6px;
+        font-size: 13px;
+        color: var(--ink-soft);
+      }
+
+      .seal {
+        position: absolute;
+        bottom: 36px;
+        left: 56px;
+        width: 130px;
+        height: 130px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: rotate(-14deg);
+        opacity: 0.9;
+        z-index: 3;
+        pointer-events: none;
+      }
+      .seal svg {
+        width: 100%;
+        height: 100%;
+      }
+      .seal.hidden {
+        display: none;
+      }
+
+      .lock-msg {
+        text-align: center;
+        font-family: "Reem Kufi", sans-serif;
+        background: rgba(138, 45, 45, 0.1);
+        border: 1px solid var(--seal);
+        color: var(--seal);
+        border-radius: 8px;
+        padding: 12px;
+        margin: 18px auto 0;
+        max-width: 600px;
+        font-size: 14px;
+        display: none;
+      }
+      .lock-msg.show {
+        display: block;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(120px);
+        background: #2a2114;
+        color: #f1e6cd;
+        border: 1px solid var(--gold-deep);
+        padding: 12px 22px;
+        border-radius: 10px;
+        font-family: "Reem Kufi", sans-serif;
+        font-size: 14px;
+        z-index: 999;
+        transition: transform 0.3s;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        max-width: 90vw;
+        text-align: center;
+      }
+      .toast.show {
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 15, 8, 0.7);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #e9dcc0;
+        font-family: "Reem Kufi", sans-serif;
+        font-size: 16px;
+      }
+      .loading-overlay.hidden {
+        display: none;
+      }
+
+      @media (max-width: 680px) {
+        .two-cols {
+          grid-template-columns: 1fr;
+        }
+        .document {
+          padding: 40px 24px 80px;
+        }
+        .doc-title {
+          font-size: 30px;
+        }
+        .seal {
+          width: 100px;
+          height: 100px;
+          left: 20px;
+          bottom: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <button class="btn" id="btnSubmitA" type="button">
+        ✍️ توقيع وتثبيت الطرف الأول
+      </button>
+      <button class="btn" id="btnSubmitB" type="button">
+        ✍️ توقيع وتثبيت الطرف الثاني
+      </button>
+      <button class="btn secondary" id="btnExport" type="button">
+        📄 تصدير PDF
+      </button>
+    </div>
+
+    <div class="doc-wrap">
+      <div class="document" id="document">
+        <div class="ornate-frame"></div>
+        <span class="corner tl"></span><span class="corner tr"></span>
+        <span class="corner bl"></span><span class="corner br"></span>
+
+        <div class="doc-inner">
+          <h1 class="doc-title">وَثيقةُ مُصالَحَة</h1>
+          <div class="divider"></div>
+
+          <div class="doc-meta">
+            <span>رقم الوثيقة: <b id="metaId">—</b></span>
+            <span>تحرّرت بتاريخ: <b id="metaDate">—</b></span>
+          </div>
+
+          <p class="preamble">
+            إنه في يومِ تصالُحٍ, اجتمعت إرادةُ الطرفين المذكورَين أدناه على طيِّ
+            صفحةِ الخلاف، وقد ارتضى كلٌّ منهما طوعاً واختياراً بنودَ هذه
+            الوثيقة، لتكون عهداً موثّقاً ، على النحو الآتي:
+          </p>
+
+          <div class="two-cols field-section">
+            <div class="party-box">
+              <span class="party-tag">الطرف الأول</span>
+              <h3>الطرف الأول</h3>
+              <div class="field-label">الاسم</div>
+              <input
+                class="field-input"
+                id="nameA"
+                placeholder="اكتب اسم الطرف الأول"
+              />
+            </div>
+            <div class="party-box">
+              <span class="party-tag">الطرف الثاني</span>
+              <h3>الطرف الثاني</h3>
+              <div class="field-label">الاسم</div>
+              <input
+                class="field-input"
+                id="nameB"
+                placeholder="اكتب اسم الطرف الثاني"
+              />
+            </div>
+          </div>
+
+          <div class="field-section">
+            <div class="field-label">تفاصيل النزاع</div>
+            <textarea
+              class="field-textarea"
+              id="dispute"
+              placeholder="وصفٌ موجزٌ لما جرى بين الطرفين..."
+            ></textarea>
+          </div>
+
+          <div class="field-section">
+            <div class="field-label">أسباب النزاع</div>
+            <textarea
+              class="field-textarea"
+              id="reasons"
+              placeholder="الأسباب التي أدّت إلى الخلاف..."
+            ></textarea>
+          </div>
+
+          <div class="field-section">
+            <div class="field-label">شروط المصالحة وبنودها</div>
+            <textarea
+              class="field-textarea"
+              id="terms"
+              placeholder="١- ...&#10;٢- ...&#10;٣- ..."
+              style="min-height: 130px"
+            ></textarea>
+          </div>
+
+          <div class="two-cols field-section">
+            <div class="party-box">
+              <span class="party-tag">توقيع الطرف الأول</span>
+              <h3>توقيع الطرف الأول</h3>
+              <div class="sign-area">
+                <div class="sign-drop" id="dropA">
+                  <span class="placeholder"
+                    >اضغط لرفع صورة التوقيع / الختم</span
+                  >
+                </div>
+                <input type="file" id="fileA" accept="image/*" hidden />
+                <div class="sign-line">
+                  الاسم والتوقيع — <span id="signNameA">………</span>
+                </div>
+              </div>
+            </div>
+            <div class="party-box">
+              <span class="party-tag">توقيع الطرف الثاني</span>
+              <h3>توقيع الطرف الثاني</h3>
+              <div class="sign-area">
+                <div class="sign-drop" id="dropB">
+                  <span class="placeholder"
+                    >اضغط لرفع صورة التوقيع / الختم</span
+                  >
+                </div>
+                <input type="file" id="fileB" accept="image/*" hidden />
+                <div class="sign-line">
+                  الاسم والتوقيع — <span id="signNameB">………</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lock-msg" id="lockMsg">
+            🔒 تمّت المصالحة وتوقيع الطرفين — أُغلقت الوثيقة نهائياً ولا يمكن
+            تعديلها. لتبقَ ذكرى باقية. 🤍
+          </div>
+        </div>
+
+        <div class="seal hidden" id="seal">
+          <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <path
+                id="circlePath"
+                d="M100,100 m-72,0 a72,72 0 1,1 144,0 a72,72 0 1,1 -144,0"
+              />
+            </defs>
+            <circle
+              cx="100"
+              cy="100"
+              r="92"
+              fill="none"
+              stroke="#8a2d2d"
+              stroke-width="3"
+            />
+            <circle
+              cx="100"
+              cy="100"
+              r="82"
+              fill="none"
+              stroke="#8a2d2d"
+              stroke-width="1.5"
+            />
+            <circle
+              cx="100"
+              cy="100"
+              r="50"
+              fill="none"
+              stroke="#8a2d2d"
+              stroke-width="1.5"
+            />
+            <text
+              fill="#8a2d2d"
+              font-family="Aref Ruqaa, serif"
+              font-size="15"
+              font-weight="700"
+            >
+              <textPath href="#circlePath" startOffset="2%">
+                • وثيقة مصالحة موثّقة • عهدٌ وذكرى باقية •
+              </textPath>
+            </text>
+            <text
+              x="100"
+              y="92"
+              text-anchor="middle"
+              fill="#8a2d2d"
+              font-family="Aref Ruqaa, serif"
+              font-size="22"
+              font-weight="700"
+            >
+              صُلْح
+            </text>
+            <text
+              x="100"
+              y="116"
+              text-anchor="middle"
+              fill="#8a2d2d"
+              font-family="Aref Ruqaa, serif"
+              font-size="13"
+            >
+              وَوِفَاق
+            </text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <div class="loading-overlay hidden" id="loading">… جاري التحميل</div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        const SHARED_FIELDS = ["dispute", "reasons", "terms"];
+
+        // معرّف الوثيقة: يؤخذ من ?doc=... في الرابط، وإلا قيمة افتراضية ثابتة.
+        // هكذا تشارك صديقتك نفس الرابط فتفتحان نفس الوثيقة تلقائياً — بلا أي إعداد منها.
+        const params = new URLSearchParams(location.search);
+        const DOC_ID = params.get("doc") || "reconciliation-001";
+
+        let state = {
+          nameA: "",
+          nameB: "",
+          dispute: "",
+          reasons: "",
+          terms: "",
+          signA: null,
+          signB: null,
+          lockedA: false,
+          lockedB: false,
+          createdAt: null,
+          finalized: false,
+        };
+
+        const $ = (id) => document.getElementById(id);
+
+        let toastTimer;
+        function toast(msg) {
+          const t = $("toast");
+          t.textContent = msg;
+          t.classList.add("show");
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => t.classList.remove("show"), 3800);
+        }
+        function showLoading(on) {
+          $("loading").classList.toggle("hidden", !on);
+        }
+
+        /* ===== API ===== */
+        async function apiGet() {
+          const r = await fetch("/api/doc/" + encodeURIComponent(DOC_ID));
+          const j = await r.json();
+          if (!j.ok) throw new Error(j.error || "خطأ في الجلب");
+          return j.doc;
+        }
+        async function apiSign(party) {
+          const r = await fetch(
+            "/api/doc/" + encodeURIComponent(DOC_ID) + "/sign",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                party,
+                name: state["name" + party],
+                sign: state["sign" + party],
+                shared: {
+                  dispute: state.dispute,
+                  reasons: state.reasons,
+                  terms: state.terms,
+                },
+              }),
+            },
+          );
+          const j = await r.json();
+          if (!j.ok) {
+            const e = new Error(j.error || "خطأ في الحفظ");
+            e.doc = j.doc;
+            throw e;
+          }
+          return j.doc;
+        }
+
+        /* ===== عرض ===== */
+        function mergeRemote(doc) {
+          if (!doc) return;
+          [
+            "nameA",
+            "nameB",
+            "dispute",
+            "reasons",
+            "terms",
+            "signA",
+            "signB",
+          ].forEach((k) => {
+            if (doc[k] != null) state[k] = doc[k];
+          });
+          state.lockedA = !!doc.lockedA;
+          state.lockedB = !!doc.lockedB;
+          state.finalized = !!doc.finalized || (state.lockedA && state.lockedB);
+          state.createdAt = doc.createdAt || state.createdAt;
+        }
+
+        function setSignature(party, data) {
+          const drop = $("drop" + party);
+          drop.innerHTML = data
+            ? '<img src="' + data + '" alt="توقيع" />'
+            : '<span class="placeholder">اضغط لرفع صورة التوقيع / الختم</span>';
+        }
+
+        function applyStateToUI() {
+          $("metaId").textContent = DOC_ID;
+          $("metaDate").textContent = (
+            state.createdAt ? new Date(state.createdAt) : new Date()
+          ).toLocaleDateString("ar-EG", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+
+          ["nameA", "nameB", "dispute", "reasons", "terms"].forEach((k) => {
+            if ($(k)) $(k).value = state[k] || "";
+          });
+          $("signNameA").textContent = state.nameA || "………";
+          $("signNameB").textContent = state.nameB || "………";
+          setSignature("A", state.signA);
+          setSignature("B", state.signB);
+          refreshLocks();
+        }
+
+        function refreshLocks() {
+          state.finalized = state.lockedA && state.lockedB;
+          $("nameA").disabled = state.lockedA;
+          $("nameB").disabled = state.lockedB;
+          SHARED_FIELDS.forEach((f) => {
+            $(f).disabled = state.finalized;
+          });
+
+          ["A", "B"].forEach((p) => {
+            const locked = state["locked" + p];
+            $("drop" + p).style.pointerEvents = locked ? "none" : "auto";
+            $("drop" + p).style.cursor = locked ? "default" : "pointer";
+            const btn = $("btnSubmit" + p);
+            btn.disabled = locked;
+            if (locked)
+              btn.textContent =
+                "✅ ثُبّت الطرف " + (p === "A" ? "الأول" : "الثاني");
+          });
+
+          $("seal").classList.toggle("hidden", !state.finalized);
+          $("lockMsg").classList.toggle("show", state.finalized);
+        }
+
+        /* ===== ربط الحقول ===== */
+        function bindFields() {
+          ["nameA", "nameB"].forEach((id) => {
+            $(id).addEventListener("input", () => {
+              state[id] = $(id).value;
+              $("signName" + id.slice(-1)).textContent = $(id).value || "………";
+            });
+          });
+          SHARED_FIELDS.forEach((id) => {
+            $(id).addEventListener("input", () => {
+              state[id] = $(id).value;
+            });
+          });
+        }
+
+        function bindUpload(party) {
+          const drop = $("drop" + party),
+            file = $("file" + party);
+          drop.addEventListener("click", () => {
+            if (!state["locked" + party]) file.click();
+          });
+          file.addEventListener("change", () => {
+            const f = file.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              state["sign" + party] = e.target.result;
+              setSignature(party, e.target.result);
+            };
+            reader.readAsDataURL(f);
+          });
+        }
+
+        /* ===== توقيع طرف ===== */
+        async function submitParty(party) {
+          const ar = party === "A" ? "الأول" : "الثاني";
+          if (!state["name" + party] || !$("name" + party).value.trim()) {
+            toast("✋ اكتب اسم الطرف " + ar);
+            return;
+          }
+          state["name" + party] = $("name" + party).value.trim();
+          if (!state["sign" + party]) {
+            toast("✋ ارفع صورة توقيع الطرف " + ar);
+            return;
+          }
+
+          SHARED_FIELDS.forEach((f) => {
+            state[f] = $(f).value;
+          });
+
+          const btn = $("btnSubmit" + party);
+          btn.disabled = true;
+          btn.textContent = "… جاري الحفظ";
+          showLoading(true);
+          try {
+            const doc = await apiSign(party);
+            mergeRemote(doc);
+            applyStateToUI();
+            toast("✅ تم توقيع وتثبيت الطرف " + ar + " بنجاح 🤍");
+          } catch (err) {
+            console.error(err);
+            if (err.doc) {
+              mergeRemote(err.doc);
+              applyStateToUI();
+            }
+            toast("⚠️ " + err.message);
+            btn.disabled = false;
+            btn.textContent = "✍️ توقيع وتثبيت الطرف " + ar;
+          } finally {
+            showLoading(false);
+          }
+        }
+
+        /* ===== PDF ===== */
+        async function exportPDF() {
+          const doc = $("document");
+          const toolbar = document.querySelector(".toolbar");
+          toolbar.style.display = "none";
+          toast("… جاري إنشاء ملف PDF");
+          try {
+            const canvas = await html2canvas(doc, {
+              scale: 2,
+              backgroundColor: null,
+              useCORS: true,
+              logging: false,
+            });
+            const imgData = canvas.toDataURL("image/jpeg", 0.95);
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+              orientation: "portrait",
+              unit: "mm",
+              format: "a4",
+            });
+            const pageW = pdf.internal.pageSize.getWidth();
+            const pageH = pdf.internal.pageSize.getHeight();
+            const imgW = pageW,
+              imgH = (canvas.height * imgW) / canvas.width;
+            if (imgH <= pageH) {
+              pdf.addImage(imgData, "JPEG", 0, 0, imgW, imgH);
+            } else {
+              let remaining = imgH,
+                position = 0;
+              while (remaining > 0) {
+                pdf.addImage(imgData, "JPEG", 0, position, imgW, imgH);
+                remaining -= pageH;
+                if (remaining > 0) {
+                  pdf.addPage();
+                  position -= pageH;
+                }
+              }
+            }
+            pdf.save("وثيقة-مصالحة-" + DOC_ID + ".pdf");
+            toast("📄 تم تصدير الوثيقة بنجاح");
+          } catch (err) {
+            console.error(err);
+            toast("⚠️ تعذّر إنشاء PDF: " + err.message);
+          } finally {
+            toolbar.style.display = "";
+          }
+        }
+
+        /* ===== تهيئة ===== */
+        async function init() {
+          bindFields();
+          bindUpload("A");
+          bindUpload("B");
+          $("btnSubmitA").addEventListener("click", () => submitParty("A"));
+          $("btnSubmitB").addEventListener("click", () => submitParty("B"));
+          $("btnExport").addEventListener("click", exportPDF);
+          applyStateToUI();
+
+          showLoading(true);
+          try {
+            const doc = await apiGet();
+            mergeRemote(doc);
+            applyStateToUI();
+          } catch (err) {
+            console.error(err);
+            toast("⚠️ تعذّر الاتصال بالخادم: " + err.message);
+          } finally {
+            showLoading(false);
+          }
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+      })();
+    </script>
+  </body>
+</html>
